@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+
+        .button-green {
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+        }
+
+        .button-green:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<p>Welcome to SMB Core API.</p>
+<p>Press the button below to verify your email.</p>
+<a href="{{hyperLink}}"><button class="button button-green" >Click to verify your account</button></a>
+<p>If the link does not work copy the url and paste into your browser</p></br>
+{{hyperLink}}
+</body>
+</html>

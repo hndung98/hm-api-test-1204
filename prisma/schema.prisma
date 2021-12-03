@@ -1,0 +1,599 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = ["selectRelationCount", "orderByRelation", "orderByAggregateGroup", "referentialActions"]
+}
+
+model User {
+  //Auth
+  id             Int                 @id @default(autoincrement())
+  email          String?             @unique
+  password       String?
+  phoneNumber    String?             @unique
+  role           Role                @default(CUSTOMER)
+  accessKey      String?
+  notiEnabled    Boolean             @default(true)
+  verified       Boolean             @default(false)
+  hasNewNoti     Boolean             @default(false)
+  deleted        Boolean             @default(false)
+  suspended      Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime?           @updatedAt
+  //Truck owner
+  notifications  Notification[]
+  notiTokens     NotificationToken[]
+  customer       Customer?
+  doctor         Doctor?
+  reportQuestion ReportQuestion[]
+  questionLike   QuestionLike[]
+  answerLike     AnswerLike[]
+  workplace      Workplace[]
+  blockList      BlockList[]         @relation("blockUser")
+  blockedList    BlockList[]         @relation("blockedUser")
+  workplaceRate  WorkplaceRate[]
+}
+
+model Customer {
+  id                   Int             @id @default(autoincrement())
+  firstName            String?
+  lastName             String?
+  birthday             DateTime?
+  gender               Gender?
+  avatar               Asset?          @relation(fields: [avatarId], references: [uuid])
+  identityCardNumber   String?         @unique
+  avatarId             String?         @unique
+  contactPhoneNumber   String?
+  healthInsuranceCode  String? // mã bảo hiểm y tế
+  address              String? // mã bảo hiểm y tế
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime?       @updatedAt
+  userId               Int?            @unique
+  user                 User?           @relation(fields: [userId], references: [id])
+  patient              MedicalRecord[]
+  guardianOne          Guardian[]      @relation("guardianOne") //giam ho
+  guardianTwo          Guardian[]      @relation("guardianTwo") //duoc giam ho
+  provinceId           Int?
+  province             Province?       @relation(fields: [provinceId], references: [id])
+  question             Question[]
+  questionSaved        QuestionSaved[]
+  deleted              Boolean         @default(false)
+  emergencyPhoneNumber String?
+  emergencyContent     String?
+}
+
+model Doctor {
+  id                 Int           @id @default(autoincrement())
+  firstName          String?
+  lastName           String?
+  birthday           DateTime
+  contactPhoneNumber String?
+  gender             Gender
+  identityCardNumber String        @unique
+  avatar             Asset?        @relation(name: "doctorAvatar", fields: [avatarId], references: [uuid])
+  avatarId           String?       @unique
+  images             Asset[]
+  userId             Int           @unique
+  user               User          @relation(fields: [userId], references: [id])
+  operation          Operation[]
+  application        Application   @relation(fields: [applicationId], references: [id])
+  specializedId      Int //chuyen nganh
+  specialized        Specialized   @relation(fields: [specializedId], references: [id])
+  applicationId      Int           @unique
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime?     @updatedAt
+  appointment        Appointment[]
+  workHistory        WorkHistory[]
+  introduce          String[]
+  medicalExamination String[]
+  provinceId         Int?
+  province           Province?     @relation(fields: [provinceId], references: [id])
+  answer             Answer[]
+}
+
+model WorkHistory {
+  id            Int               @id @default(autoincrement())
+  from          DateTime?
+  to            DateTime?
+  workplaceId   Int
+  workplace     Workplace         @relation(fields: [workplaceId], references: [id])
+  jobPositionId Int
+  jobPosition   JobPosition       @relation(fields: [jobPositionId], references: [id])
+  doctorId      Int?
+  status        WorkHistoryStatus @default(UNCONFIRMED)
+  doctor        Doctor?           @relation(fields: [doctorId], references: [id])
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime?         @updatedAt
+}
+
+model Workplace {
+  id                 Int             @id @default(autoincrement())
+  name               String
+  address            String
+  managerId          Int
+  manager            User            @relation(fields: [managerId], references: [id])
+  contactPhoneNumber String?
+  images             Asset[]
+  type               WorkPlaceType
+  status             WorkPlaceStatus @default(PENDING)
+  workHistory        WorkHistory[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime?       @updatedAt
+  operation          Operation[]
+  workplaceRate      WorkplaceRate[]
+  latitude           Decimal?
+  longitude          Decimal?
+  medicalRecord      MedicalRecord[]
+  wardId             Int?
+  ward               Ward?           @relation(fields: [wardId], references: [id])
+  appointment        Appointment[]
+}
+
+model WorkplaceRate {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  workplaceId Int
+  workplace   Workplace @relation(fields: [workplaceId], references: [id])
+  starRate    Int
+  comment     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model JobPosition {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  workHistory WorkHistory[]
+  operation   Operation[]
+}
+
+model Guardian {
+  id        Int            @id @default(autoincrement())
+  userOneId Int
+  userTwoId Int
+  userOne   Customer       @relation(name: "guardianOne", fields: [userOneId], references: [id])
+  userTwo   Customer       @relation(name: "guardianTwo", fields: [userTwoId], references: [id])
+  status    GuardianStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime?      @updatedAt
+  name      String?
+}
+
+//tinh thanh
+model Province {
+  id            Int        @id @default(autoincrement())
+  name          String     @unique
+  code          Int?       @unique
+  codename      String?
+  division_type String?
+  phone_code    Int?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime?  @updatedAt
+  customer      Customer[]
+  doctor        Doctor[]
+  districts     District[]
+}
+
+model District {
+  id             Int       @id @default(autoincrement())
+  name           String
+  code           Int?      @unique
+  codename       String?
+  division_type  String?
+  short_codename String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+  province       Province? @relation(fields: [provinceId], references: [id])
+  provinceId     Int?
+  wards          Ward[]
+}
+
+model Ward {
+  id             Int         @id @default(autoincrement())
+  name           String
+  code           Int?        @unique
+  codename       String?
+  division_type  String?
+  short_codename String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime?   @updatedAt
+  district       District?   @relation(fields: [districtId], references: [id])
+  districtId     Int?
+  Workplace      Workplace[]
+}
+
+model Application {
+  id                 Int               @id @default(autoincrement())
+  doctor             Doctor?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime?         @updatedAt
+  images             Asset[]
+  status             ApplicationStatus @default(PENDING)
+  email              String?
+  firstName          String?
+  lastName           String?
+  birthday           DateTime
+  gender             Gender
+  password           String?
+  phoneNumber        String?
+  address            String
+  identityCardNumber String            @unique
+  specializedId      Int //chuyen nganh
+  specialized        Specialized       @relation(fields: [specializedId], references: [id])
+}
+
+model NotificationToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  deviceId  String
+  platform  Platform?
+  token     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Asset {
+  uuid            String         @id
+  extension       String
+  createdAt       DateTime       @default(now())
+  deletedAt       DateTime?
+  customer        Customer?
+  doctorAvatar    Doctor?        @relation("doctorAvatar")
+  referenceType   ReferenceType  @default(AVATAR_IMG)
+  applicationId   Int?
+  application     Application?   @relation(fields: [applicationId], references: [id])
+  medicalRecord   MedicalRecord? @relation("CustomerImages", fields: [medicalRecordId], references: [id])
+  medicalRecordId Int?
+  workplace       Workplace?     @relation(fields: [workplaceId], references: [id])
+  workplaceId     Int?
+  doctor          Doctor?        @relation(fields: [doctorId], references: [id])
+  doctorId        Int?
+  question        Question?      @relation(fields: [questionId], references: [id])
+  questionId      Int?
+  medicalFilesId  Int?
+  MedicalFiles    MedicalRecord? @relation("MedicalFiles", fields: [medicalFilesId], references: [id])
+}
+
+model BlockList {
+  id            Int       @id @default(autoincrement())
+  blockUserId   Int
+  blockUser     User      @relation(name: "blockUser", fields: [blockUserId], references: [id])
+  blockedUserId Int
+  blockedUser   User      @relation(name: "blockedUser", fields: [blockedUserId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+}
+
+model Notification {
+  id          Int              @id @default(autoincrement())
+  recipientId Int
+  senderId    Int?
+  contentId   Int?
+  type        NotificationType
+  json        Json?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime?        @updatedAt
+  sender      User?            @relation(fields: [senderId], references: [id])
+}
+
+model Operation {
+  id                 Int             @id @default(autoincrement())
+  doctor             Doctor          @relation(fields: [doctorId], references: [id])
+  doctorId           Int
+  operationHour      OperationHour[]
+  workplaceId        Int
+  workplace          Workplace       @relation(fields: [workplaceId], references: [id])
+  status             OperationStatus @default(PENDING)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime?       @updatedAt
+  address            String?
+  medicalExpense     Int?
+  patientPerHalfHour Int?            @default(0)
+  jobPosition        JobPosition     @relation(fields: [jobPositionId], references: [id])
+  jobPositionId      Int
+}
+
+model OperationHour {
+  id          Int       @id @default(autoincrement())
+  day         Weekday
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  operation   Operation @relation(fields: [operationId], references: [id])
+  operationId Int
+}
+
+//lịch hẹn
+model Appointment {
+  id              Int               @id @default(autoincrement())
+  day             DateTime
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime?         @updatedAt
+  medicalRecordId Int
+  doctorId        Int
+  doctor          Doctor            @relation(fields: [doctorId], references: [id])
+  status          AppointmentStatus @default(PENDING)
+  isPayment       Boolean?          @default(false)
+  paymentCost     Int?
+  paymentDate     DateTime?
+  medicalRecord   MedicalRecord     @relation(fields: [medicalRecordId], references: [id])
+  starRate        Int?
+  starRateComment String?
+  workplace       Workplace         @relation(fields: [workplaceId], references: [id])
+  workplaceId     Int
+}
+
+model Question {
+  id             Int              @id @default(autoincrement())
+  customerId     Int
+  customer       Customer         @relation(fields: [customerId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime?        @updatedAt
+  content        String
+  title          String
+  images         Asset[]
+  questionLike   QuestionLike[]
+  answer         Answer[]
+  questionSaved  QuestionSaved[]
+  reportQuestion ReportQuestion[]
+}
+
+model Answer {
+  id            Int          @id @default(autoincrement())
+  doctorId      Int
+  doctor        Doctor       @relation(fields: [doctorId], references: [id])
+  questionId    Int
+  question      Question     @relation(fields: [questionId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime?    @updatedAt
+  content       String
+  specializedId Int?
+  specialized   Specialized? @relation(fields: [specializedId], references: [id])
+  answerLike    AnswerLike[]
+}
+
+model QuestionLike {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+  questionId Int
+  question   Question  @relation(fields: [questionId], references: [id])
+}
+
+model AnswerLike {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  answer    Answer    @relation(fields: [answerId], references: [id])
+  answerId  Int
+}
+
+model QuestionSaved {
+  id         Int       @id @default(autoincrement())
+  customerId Int
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+  questionId Int
+  question   Question  @relation(fields: [questionId], references: [id])
+}
+
+model ReportQuestion {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime?  @updatedAt
+  userId      Int
+  user        User       @relation(fields: [userId], references: [id])
+  questionId  Int
+  question    Question   @relation(fields: [questionId], references: [id])
+  description String?
+  reportType  ReportType
+}
+
+//hồ sơ khám bệnh
+model MedicalRecord {
+  id              Int                 @id @default(autoincrement())
+  customerId      Int
+  customer        Customer            @relation(fields: [customerId], references: [id])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime?           @updatedAt
+  symptom         String[] //triệu chứng
+  diagnostic      String[]
+  images          Asset[]             @relation("CustomerImages")
+  status          MedicalRecordStatus @default(PUBLIC)
+  medicalExpense  Int?
+  note            String?
+  appointment     Appointment[]
+  workPlace       Workplace?          @relation(fields: [workplaceId], references: [id])
+  workplaceId     Int?
+  height          String?
+  weight          String?
+  bodyTemperature String?
+  bloodPressure   String?
+  heartBeat       String?
+  bloodGroup      String?
+  files           Asset[]             @relation("MedicalFiles")
+}
+
+model DynamicContent {
+  id        Int                @id @default(autoincrement())
+  type      DynamicContentType @default(GENERAL)
+  key       String?
+  title     String
+  content   String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime?          @updatedAt
+}
+
+model Specialized {
+  id          Int           @id @default(autoincrement())
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  doctor      Doctor[]
+  application Application[]
+  answer      Answer[]
+}
+
+model Log {
+  id           Int      @id @default(autoincrement())
+  userId       Int?
+  method       String?
+  url          String
+  errorMessage String?
+  content      Json?
+  createdAt    DateTime @default(now())
+}
+
+enum MedicalRecordStatus {
+  PUBLIC
+  PRIVATE
+  ONLY_DOCTOR_EXAMINATION
+}
+
+enum AppointmentStatus {
+  PENDING
+  WAITING_PAYMENT
+  DOCTOR_CANCEL
+  CUSTOMER_CANCEL
+  DONE
+  DOING
+}
+
+enum WorkPlaceType {
+  HOSPITAL
+  CLINIC
+}
+
+enum WorkPlaceStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  DENIED
+}
+
+enum OperationStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum WorkHistoryStatus {
+  UNCONFIRMED
+  CONFIRMED
+  DENIED
+}
+
+enum GuardianStatus {
+  PENDING
+  ACCEPTED
+  DENIED
+}
+
+enum UnitMedical {
+  PILL
+  ML
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum MedicationTime {
+  MORNING
+  NOON
+  AFTERNOON
+  NIGHT
+  BEFORE_SLEEP
+}
+
+enum NotificationType {
+  SYSTEM_ANNOUNCEMENT //Announcement from admin,
+  EMAIL_CHANGED
+  ACTIVATE_TRUCK
+  PAYMENT_FAILURE
+  CONFIRM_ADJUST
+  CONFIRM_SCHEDULE
+  REGISTER_TRUCK_OWNER
+  APPLY_APPLICATION
+}
+
+enum Platform {
+  IOS
+  ANDROID
+  CHROME
+  SAFARI
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+  DOCTOR
+}
+
+enum DynamicContentType {
+  GENERAL
+  FAQ
+  TERM_OF_USE
+  PRIVACY_POLICY
+  TEMPL_NOTIF
+  TEMPL_EMAIL
+}
+
+enum ReportType {
+  NUDITY
+  VIOLENCE
+  HARASSMENT
+  SELF_INJURY
+  FALSE_NEWS
+  SPAM
+  TERRORISM
+  SOMETHING_ELSE
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum ReferenceType {
+  AVATAR_IMG
+  IDENTITY_CARD
+  SPECIALIZED_CERTIFICATE
+  APPOINTMENT_IMG
+  OTHER
+  QUESTION_IMG
+  WORK_PLACE_IMG
+  MEDICAL_RECORD_FILE
+}
