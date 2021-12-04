@@ -54,5 +54,8 @@
     "ts-node-dev": "^1.1.8",
     "twilio": "^3.70.0",
     "typescript": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^3.0.3"
   }
 }
