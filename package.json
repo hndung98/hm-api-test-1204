@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "npx prisma generate && npx prisma migrate dev --preview-feature && npm run dev",
+    "start": "npm run dev",
     "dev": "ts-node-dev --exit-child --respawn --pretty --transpile-only src/index.ts",
     "build": "npx tsc&& cp .env dist",
     "dbgen": "npx prisma generate",
