@@ -8,10 +8,14 @@ if (!process.env.PORT) {
 }
 const PORT: number = parseInt(process.env.PORT as string, 10);
 
+const options: cors.CorsOptions = {
+  origin: "*"
+};
+
 const app = express();
 app.use(env);
 app.use(express.json({ limit: "8mb" }));
-app.use(cors());
+app.use(cors(options));
 app.use(router);
 
 if (process.env.FLUTTER_PROXY) {
