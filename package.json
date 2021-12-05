@@ -25,7 +25,7 @@
   "license": "CL",
   "devDependencies": {},
   "dependencies": {
-    "@prisma/client": "^2.30.3",
+    "@prisma/client": "^3.3.0",
     "@sendgrid/mail": "^7.4.4",
     "@types/express-fileupload": "^1.1.6",
     "@types/jsonwebtoken": "^8.5.1",
