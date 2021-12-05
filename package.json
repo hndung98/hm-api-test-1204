@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "start": "npm run dev",
-    "dev": "ts-node-dev --exit-child --respawn --pretty --transpile-only src/index.ts",
+    "dev": "npx ts-node-dev --exit-child --respawn --pretty --transpile-only src/index.ts",
     "build": "npx tsc&& cp .env dist",
     "dbgen": "npx prisma generate",
     "dbint": "npx prisma introspect",
