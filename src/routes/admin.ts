@@ -36,7 +36,7 @@ container
   .get('/guardian', UserService.getGuardians)
   .post('/check-token', UserService.checkToken, CheckSessionToken)
   .put('/suspend/:id', UserService.suspend, SuspendUser)
-  .put('/customer/delete/:id', UserService.deleteCustomer, DeleteCustomer)
+  .put('/guardian/delete/:id', UserService.deleteCustomer, DeleteCustomer)
 
 container
   .route('/specialized')

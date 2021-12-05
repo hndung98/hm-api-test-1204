@@ -17,7 +17,7 @@ export default class LocalizationRepo {
         enableLanguage: e.countryCode == "US",
       }));
 
-    } catch (error) {
+    } catch (error: any) {
       return { error: error.message };
     }
   }

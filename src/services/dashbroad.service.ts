@@ -1,4 +1,5 @@
 
+import { AppointmentStatus } from '.prisma/client';
 import prisma from '../common/helpers/prisma.helper'
 
 export default class DashbroadService {
@@ -34,7 +35,13 @@ export default class DashbroadService {
         appointment: 0,
         medicalRecord: 0,
         question: 0,
-        answer: 0
+        answer: 0,
+        appointment_PENDING: 0,
+        appointment_WAITING_PAYMENT: 0,
+        appointment_DOCTOR_CANCEL: 0,
+        appointment_CUSTOMER_CANCEL: 0,
+        appointment_DONE: 0,
+        appointment_DOING: 0,
       })
       if (runMonth < 11) {
         runMonth++
@@ -83,7 +90,63 @@ export default class DashbroadService {
         const key = `${e.createdAt.getMonth() + 1}-${e.createdAt.getFullYear()}`
         if (roadMap.has(key)) {
           const preRoadMap = roadMap.get(key)
-          roadMap.set(key, { ...preRoadMap, appointment: preRoadMap.appointment + 1 })
+          // roadMap.set(key, { ...preRoadMap, appointment: preRoadMap.appointment + 1 })
+          switch (e.status) {
+            case AppointmentStatus.PENDING:
+              roadMap.set(
+                key,
+                {
+                  ...preRoadMap,
+                  appointment_PENDING: preRoadMap.appointment_PENDING + 1,
+                  appointment: preRoadMap.appointment + 1
+                })
+              break
+            case AppointmentStatus.DOING:
+              roadMap.set(
+                key,
+                {
+                  ...preRoadMap,
+                  appointment_DOING: preRoadMap.appointment_DOING + 1,
+                  appointment: preRoadMap.appointment + 1
+                })
+              break
+            case AppointmentStatus.DONE:
+              roadMap.set(
+                key,
+                {
+                  ...preRoadMap,
+                  appointment_DONE: preRoadMap.appointment_DONE + 1,
+                  appointment: preRoadMap.appointment + 1
+                })
+              break
+            case AppointmentStatus.WAITING_PAYMENT:
+              roadMap.set(
+                key,
+                {
+                  ...preRoadMap,
+                  appointment_WAITING_PAYMENT: preRoadMap.appointment_WAITING_PAYMENT + 1,
+                  appointment: preRoadMap.appointment + 1
+                })
+              break
+            case AppointmentStatus.CUSTOMER_CANCEL:
+              roadMap.set(
+                key,
+                {
+                  ...preRoadMap,
+                  appointment_CUSTOMER_CANCEL: preRoadMap.appointment_CUSTOMER_CANCEL + 1,
+                  appointment: preRoadMap.appointment + 1
+                })
+              break
+            case AppointmentStatus.DOCTOR_CANCEL:
+              roadMap.set(
+                key,
+                {
+                  ...preRoadMap,
+                  appointment_DOCTOR_CANCEL: preRoadMap.appointment_DOCTOR_CANCEL + 1,
+                  appointment: preRoadMap.appointment + 1
+                })
+              break
+          }
         }
       })
       medicalRecords.map(e => {

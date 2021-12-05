@@ -30,7 +30,7 @@ export class RouteContainer {
           callback,
           params,
           routeRoles,
-          apiRoles,
+          apiRoles ?? [],
           middleware,
         )
       },
@@ -48,7 +48,7 @@ export class RouteContainer {
           callback,
           params,
           routeRoles,
-          apiRoles,
+          apiRoles ?? [],
           middleware,
         )
       },
@@ -66,7 +66,7 @@ export class RouteContainer {
           callback,
           params,
           routeRoles,
-          apiRoles,
+          apiRoles ?? [],
           middleware,
         )
       },
@@ -84,7 +84,7 @@ export class RouteContainer {
           callback,
           params,
           routeRoles,
-          apiRoles,
+          apiRoles ?? [],
           middleware,
         )
       },
@@ -102,7 +102,7 @@ export class RouteContainer {
           callback,
           params,
           routeRoles,
-          apiRoles,
+          apiRoles ?? [],
           middleware,
         )
       },
